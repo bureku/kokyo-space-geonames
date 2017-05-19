@@ -1,4 +1,4 @@
-#Kokyo.space PostalCode Service 
+# Kokyo.space PostalCode Service 
 A simple microservice to expose GeoNames.org postalcode dataset as JSON objects. 
  
  * Spring Boot
