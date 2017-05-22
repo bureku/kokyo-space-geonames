@@ -21,5 +21,6 @@ public interface GeoNameRepository extends MongoRepository<GeoName, BigInteger> 
 
     @RestResource(path = "postalcode")
     Iterable<GeoName> findByCountryCodeAndPostalCode(@Param("country") String countryCode, @Param("postalcode") String postalCode);
+
     
 }
