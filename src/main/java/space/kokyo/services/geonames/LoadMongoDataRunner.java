@@ -4,6 +4,8 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -27,6 +29,8 @@ import java.io.Reader;
 @Component
 public class LoadMongoDataRunner implements CommandLineRunner {
 
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
+
     @Value("classpath*:${space.kokyo.data.filesPattern}")
     private Resource[] datafiles;
     
@@ -46,7 +50,7 @@ public class LoadMongoDataRunner implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         if(loadData) {
-            System.out.println("Refresh Mongodb with new data");
+            log.info("Refresh Mongodb with new data");
             mongoTemplate.dropCollection(GeoName.class);
 
             for(Resource postalCodeDataSet: datafiles) {
@@ -77,7 +81,7 @@ public class LoadMongoDataRunner implements CommandLineRunner {
                     repository.save(geoName);
                 }
 
-                System.out.println("Inserted dataset from: " + postalCodeDataSet.getFilename());
+                log.debug("Inserted dataset from: " + postalCodeDataSet.getFilename());
 
                 in.close();
 
@@ -92,7 +96,7 @@ public class LoadMongoDataRunner implements CommandLineRunner {
             }
         }
         else {
-            System.out.println("Using existing data");
+            log.info("Using existing data");
         }
 
     }
