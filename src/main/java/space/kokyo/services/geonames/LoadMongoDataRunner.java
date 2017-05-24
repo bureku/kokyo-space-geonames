@@ -9,13 +9,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.io.Resource;
-import org.springframework.data.geo.Point;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.index.CompoundIndexDefinition;
 import org.springframework.data.mongodb.core.index.GeospatialIndex;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 import java.io.FileReader;
 import java.io.Reader;
@@ -27,6 +27,7 @@ import java.io.Reader;
  * @since 1.8
  */
 @Component
+@Profile("{prod,dev}")
 public class LoadMongoDataRunner implements CommandLineRunner {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
@@ -41,10 +42,14 @@ public class LoadMongoDataRunner implements CommandLineRunner {
 
     private final MongoTemplate mongoTemplate;
 
+    private final Converter<CSVRecord, GeoName> csvRecordToGeoNameConverter;
+
     @Autowired
-    public LoadMongoDataRunner(GeoNameRepository repository, MongoTemplate mongoTemplate) {
+    public LoadMongoDataRunner(GeoNameRepository repository, MongoTemplate mongoTemplate,
+                               Converter<CSVRecord, GeoName> csvRecordToGeoNameConverter) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
+        this.csvRecordToGeoNameConverter = csvRecordToGeoNameConverter;
     }
 
     @Override
@@ -58,27 +63,7 @@ public class LoadMongoDataRunner implements CommandLineRunner {
                 Iterable<CSVRecord> records = CSVFormat.TDF.parse(in);
 
                 for(CSVRecord record: records) {
-                    GeoName geoName = new GeoName();
-                    geoName.setCountryCode(record.get(0));
-                    geoName.setPostalCode(record.get(1));
-                    geoName.setPlaceName(record.get(2));
-                    geoName.setAdminName1(record.get(3));
-                    geoName.setAdminCode1(record.get(4));
-                    geoName.setAdminName2(record.get(5));
-                    geoName.setAdminCode2(record.get(6));
-                    geoName.setAdminName3(record.get(7));
-                    geoName.setAdminCode3(record.get(8));
-                    // the ever confusing longitude, latitude VS latitude, longitude
-                    geoName.setLocation(new Point(Double.valueOf(record.get(10)), Double.valueOf(record.get(9))));
-
-                    // some datasets are missing accuracy, will default to 3. 
-                    if(StringUtils.isEmpty(record.get(11))) {
-                        geoName.setAccuracy(3);
-                    } else {
-                        geoName.setAccuracy(Integer.valueOf(record.get(11)));
-                    }
-
-                    repository.save(geoName);
+                    repository.save(csvRecordToGeoNameConverter.convert(record));
                 }
 
                 log.debug("Inserted dataset from: " + postalCodeDataSet.getFilename());

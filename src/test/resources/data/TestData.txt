@@ -1,0 +1,3 @@
+AU	0200	Australian National University	Australian Capital Territory	ACT	CANBERRA				-35.2777	149.1189	1
+AU	0221	Barton	Australian Capital Territory	ACT					-35.3049	149.1412	4
+AU	2540	Jervis Bay	Australian Capital Territory	ACT	NEW CNTRY WEST				-35.1333	150.7    
